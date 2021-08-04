@@ -1,0 +1,19 @@
+version = "3"
+
+service:
+ prueba-react:
+  container_name: prueba-react
+  build:
+   context: .
+   dockerfile: Dockerfile
+  command: npm start
+  image: nodejs
+#  env_file:
+#   - .env
+  networks:
+   - my-bridge-network
+  volumes:
+   - .:/prueba
+   - /prueba/node_modules
+  ports:
+   - "3000:80"
