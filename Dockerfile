@@ -1,21 +1,12 @@
-FROM node:14
-RUN mkdir -p /home/ubuntu/prueba/node_modules && chown -R node:node /home/ubuntu/prueba
-WORKDIR /home/ubuntu/prueba
-# RUN ENV=${ENV}
-# ENV MYSQL_ROOT_PASSWORD root1234
-# ENV MYSQL_DATABASE gamesplatform
-# ENV MYSQL_USER root
-# ENV MYSQL_HOST localhost
-
-COPY package*.json ./
-#COPY yarn.lock .
-#COPY .env .
-
-RUN yarn install
-COPY . .
-RUN yarn build
-
-EXPOSE 3000
-EXPOSE 3036
-
-CMD [ "npm", "start"]
+# Stage 0, "build-stage", based on Node.js, to build and compile the frontend
+FROM tiangolo/node-frontend:10 as build-stage
+WORKDIR /app
+COPY package*.json /app/
+RUN npm install
+COPY ./ /app/
+RUN npm run build
+# Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
+FROM nginx:1.15
+COPY --from=build-stage /app/build/ /usr/share/nginx/html
+# Copy the default nginx.conf provided by tiangolo/node-frontend
+COPY --from=build-stage /nginx.conf /etc/nginx/conf.d/default.conf
